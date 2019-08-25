@@ -1,0 +1,12 @@
+{
+    "python.pythonPath": "/usr/local/bin/python",
+    "spellright.language": [
+        "pt"
+    ],
+    "spellright.documentTypes": [
+        "markdown",
+        "latex",
+        "plaintext",
+        "python"
+    ]
+}

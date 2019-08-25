@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-HOST='localhost'
+HOST='0.0.0.0'
 PORT='8088'
 
 # set timeout value for ncclient
@@ -14,13 +14,13 @@ fi
 echo ""
 
 if [ -f "v/bin/activate" ]; then
-	echo "Activating virtualenv .."
-	source v/bin/activate
+    echo "Activating virtualenv .."
+    source v/bin/activate
 fi
 
 command -v pyang >/dev/null 2>&1 || {
-    echo "pyang not found.. please install pyang before continuing !!" >&2;
-    exit -1;
+    echo "pyang not found.. please install pyang before continuing !!" >&2
+    exit -1
 }
 
 echo "Starting YangExplorer server .."

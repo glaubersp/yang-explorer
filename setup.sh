@@ -18,35 +18,39 @@ remove_ann_file=0
 
 while getopts "h?yna:r" opt; do
     case "$opt" in
-    h|\?)
+    h | \?)
         show_help
         exit 0
         ;;
 
-    y)  default_yes=1
+    y)
+        default_yes=1
         ;;
 
-    n)  no_db=1
+    n)
+        no_db=1
         ;;
 
-    a)  ann_file=${OPTARG}
+    a)
+        ann_file=${OPTARG}
         ;;
 
-    r)  remove_ann_file=1
+    r)
+        remove_ann_file=1
         ann_file=''
         ;;
     esac
 done
 
-shift $((OPTIND-1))
+shift $((OPTIND - 1))
 [ "$1" = "--" ] && shift
 
 echo "Installing yang-explorer .."
 echo "Checking environment .."
 
 command -v pip >/dev/null 2>&1 || {
-	echo "pip not found.. please install python pip before continuing !!" >&2;
-	exit -1;
+    echo "pip not found.. please install python pip before continuing !!" >&2
+    exit -1
 }
 
 command -v virtualenv >/dev/null 2>&1 || {
@@ -60,11 +64,10 @@ command -v virtualenv >/dev/null 2>&1 || {
         printf "Do you want to continue? (y/Y) "
         read response
 
-        if printf "%s\n" "$response" | grep -Eq "$(locale yesexpr)"
-        then
-            break;
+        if printf "%s\n" "$response" | grep -Eq "$(locale yesexpr)"; then
+            break
         else
-            exit -1;
+            exit -1
         fi
     fi
 }
@@ -74,8 +77,8 @@ if [[ $NOVENV != 1 ]]; then
     if [ -f "v/bin/activate" ]; then
         source v/bin/activate
     else
-	python_prog=$(type -a python2.7 | head -1 | cut -d" " -f3)
-	echo "Using Python Program: ${python_prog}"
+        python_prog=$(type -a python2.7 | head -1 | cut -d" " -f3)
+        echo "Using Python Program: ${python_prog}"
         virtualenv --python=${python_prog} v
         source v/bin/activate
     fi
@@ -84,34 +87,33 @@ fi
 echo "Installing dependencies .."
 pip install --upgrade pip
 pip install -r requirements.txt
-cd ../; \
-git clone https://github.com/CiscoDevNet/ydk-py.git -b yam; \
-cd ydk-py; \
-cd core; \
-python setup.py sdist; \
-pip install dist/ydk*.gz; \
-cd ../ietf; \
-python setup.py sdist; \
-pip install dist/ydk*.gz; \
-cd ../openconfig; \
-python setup.py sdist; \
-pip install dist/ydk*.gz; \
-cd ../cisco-ios-xr; \
-python setup.py sdist; \
-pip install dist/ydk*.gz; \
-cd ../../yang-explorer; \
+git clone https://github.com/CiscoDevNet/ydk-py.git -b yam
+cd ydk-py
+cd core
+python setup.py sdist
+pip install dist/ydk*.gz
+cd ../ietf
+python setup.py sdist
+pip install dist/ydk*.gz
+cd ../openconfig
+python setup.py sdist
+pip install dist/ydk*.gz
+cd ../cisco-ios-xr
+python setup.py sdist
+pip install dist/ydk*.gz
+cd ../..
 echo "Installing dependencies .. done"
 
 rc=$?
 if [[ $rc != 0 ]]; then
-	echo "Installation failed !! aborted !!"
-	exit $rc
+    echo "Installation failed !! aborted !!"
+    exit $rc
 fi
 
 echo "Setting up initial database .."
 
 if [ -f "server/data/db.sqlite3" ]; then
-	echo "Database already exist .. skipping"
+    echo "Database already exist .. skipping"
 else
     if [[ $UID == 0 ]]; then
         echo ""
@@ -123,59 +125,59 @@ else
             printf "Do you want to continue as root ? (n/N) "
             read response
 
-            if ! printf "%s\n" "$response" | grep -Eq "$(locale yesexpr)"
-                then
-                exit 1;
+            if ! printf "%s\n" "$response" | grep -Eq "$(locale yesexpr)"; then
+                exit 1
             fi
         fi
     fi
 
-	cd server
-	echo "Creating data directories .."
-	mkdir -p data/users
-	mkdir -p data/session
-	mkdir -p data/collections
-	mkdir -p data/annotation
+    cd server
+    echo "Creating data directories .."
+    mkdir -p data/users
+    mkdir -p data/session
+    mkdir -p data/collections
+    mkdir -p data/annotation
 
-	if [ ! -d "data/users" ]; then
-		echo "Failed to create data directories !!"
-		echo "Setup failed !!"
-		exit -1
-	fi
+    if [ ! -d "data/users" ]; then
+        echo "Failed to create data directories !!"
+        echo "Setup failed !!"
+        exit -1
+    fi
 
-	echo "Creating database .."
-	python manage.py migrate
-	echo "Creating default users .."
-	python manage.py setupdb
-	cd ..
+    echo "Creating database .."
+    python manage.py migrate
+    echo "Creating default users .."
+    python manage.py setupdb
+    cd ..
 fi
 
-if [ "$ann_file" != "" ]  && [ -f $ann_file ]; then
-	mkdir -p server/data/annotation
+if [ "$ann_file" != "" ] && [ -f $ann_file ]; then
+    mkdir -p server/data/annotation
     cp $ann_file server/data/annotation/
     echo "Annotation installed at data/annotation"
 elif [[ $remove_ann_file != 0 ]]; then
-	rm -f server/data/annotation/*.json
+    rm -f server/data/annotation/*.json
     echo "Annotation uninstalled from data/annotation"
 fi
 
 add_model() {
-	GUESTPATH=data/users/guest
-	DEFAULT_YANG=$GUESTPATH/yang/$1.yang
-	DEFAULT_CXML=$GUESTPATH/cxml/$1.xml
-	pyang --plugindir explorer/plugins -p $GUESTPATH/yang -f cxml  $GUESTPATH/yang/*.yang $DEFAULT_YANG > $DEFAULT_CXML
+    GUESTPATH=data/users/guest
+    DEFAULT_YANG=$GUESTPATH/yang/$1.yang
+    DEFAULT_CXML=$GUESTPATH/cxml/$1.xml
+    pyang --plugindir explorer/plugins -p $GUESTPATH/yang -f cxml $GUESTPATH/yang/*.yang $DEFAULT_YANG >$DEFAULT_CXML
 }
 
 if [ -d "server/data/users/guest/yang" ]; then
     count=$(find server/data/users/guest/yang -maxdepth 1 -type f -name '*.yang' | wc -l)
-    if [ $count -eq 0 ] ; then
+    if [ $count -eq 0 ]; then
         echo "Copying default models .."
         cp default-models/* server/data/users/guest/yang/
-        cd server
-        add_model "ietf-interfaces@2013-12-23"
-        add_model "ietf-netconf-monitoring@2010-10-04"
-        cd ..
     fi
+    cd server
+    for file in data/users/guest/yang/*.yang; do
+        add_model "$(basename ${file%.yang})"
+    done
+    cd ..
 fi
 
 echo "Setup completed.. "

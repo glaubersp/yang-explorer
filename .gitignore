@@ -3,3 +3,6 @@ v/
 *~
 server/data/db.sqlite3
 server/static/graph*
+ydk-py
+
+.metals/
